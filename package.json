@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "build": "babel ./src -d ./build --source-maps",
-    "prestart": "yarn build",
+    "prestart": "if hash babel 2>/dev/null; then yarn build; fi",
     "heroku-postbuild": "yarn build",
     "start": "./build/server.js"
   },
