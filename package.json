@@ -14,7 +14,8 @@
     "factory-girl": "^5.0.2",
     "jsonapi-server": "^4.2.0",
     "lodash": "^4.17.11",
-    "moment": "^2.22.2"
+    "moment": "^2.22.2",
+    "source-map-support": "^0.5.9"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
