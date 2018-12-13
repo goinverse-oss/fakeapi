@@ -37,7 +37,7 @@ const promises = _.map(resources, (attributes, resource) => (
 ));
 
 jsonApi.setConfig({
-  port: 16006,
+  port: process.env.PORT || 16006,
   graphiql: true,
 });
 
