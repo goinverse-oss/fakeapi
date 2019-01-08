@@ -4,37 +4,22 @@
 
 import 'source-map-support/register';
 
-import _ from 'lodash';
-import { factory, ObjectAdapter } from 'factory-girl';
 import jsonApi from 'jsonapi-server';
 
-import resources from './resources';
+import { buildExamples } from './factory';
 
-function resourceCount(resourceName) {
-  if (resourceName === 'meditationCategories') {
-    return 5;
-  }
-  return 25;
-}
-
-factory.setAdapter(new ObjectAdapter());
-
-const promises = _.map(resources, (attributes, resource) => (
-  new Promise((resolve, reject) => {
-    factory.buildMany(resource, resourceCount(resource)).then((examples) => {
+const promises = buildExamples().map(
+  promise => promise.then(
+    ({ examples, attributes, resource }) => {
       jsonApi.define({
         handlers: new jsonApi.MemoryHandler(),
         resource,
         attributes,
         examples,
       });
-      resolve();
-    }).catch((err) => {
-      console.error(err);
-      reject(err);
-    });
-  })
-));
+    }
+  )
+);
 
 jsonApi.setConfig({
   port: process.env.PORT || 16006,
