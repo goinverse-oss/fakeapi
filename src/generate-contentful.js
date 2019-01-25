@@ -13,7 +13,8 @@ async function getExampleEntries(environment) {
   // fetch any pre-existing Entries
   return _.fromPairs(
     await Promise.all([
-      'tag', 'contributor', 'meditationCategory', 'meditation'
+      'tag', 'contributor', 'meditationCategory', 'meditation',
+      'podcast', 'podcastEpisode', 'podcastSeason',
     ].map(async (resource) => {
       const entries = (await environment.getEntries({ content_type: resource })).items;
       return [resource, entries];
@@ -87,7 +88,7 @@ async function main() {
         {
           fields: _(example)
             .omit(
-              ['id', 'type', 'tags', 'meditations', 'createdAt', 'updatedAt']
+              ['id', 'type', 'tags', 'meditations', 'episodes', 'createdAt', 'updatedAt']
             )
             .mapValues((value) => ({ 'en-US': value }))
             .value()
@@ -122,7 +123,7 @@ async function main() {
 
   const meditations = examplesByResource.meditation.examples
     .slice(exampleEntries.meditation.length);
-  const bar = new ProgressBar(
+  let bar = new ProgressBar(
     'meditations: :current/:total :bar',
     { total: meditations.length },
   );
@@ -146,6 +147,101 @@ async function main() {
       }
     };
     await environment.createEntry('meditation', json);
+    bar.tick();
+  }
+
+  const podcasts = examplesByResource.podcast.examples
+    .slice(exampleEntries.podcast.length);
+  bar = new ProgressBar(
+    'podcasts: :current/:total :bar',
+    { total: podcasts.length },
+  );
+  for (const example of podcasts) {
+    const json = {
+      fields: {
+        title: withType(example.title),
+        description: withType(example.description),
+        imageUrl: withType(example.imageUrl),
+
+        tags: withType(example.tags.map(tag => makeLink('tag', tag))),
+        contributors: withType(
+          example.contributors.map(
+            contributor => makeLink('contributor', contributor)
+          ),
+        ),
+      }
+    };
+    await environment.createEntry('podcast', json);
+    bar.tick();
+  }
+
+  exampleEntries.podcast = (await environment.getEntries({
+    content_type: 'podcast',
+  })).items;
+
+  const podcastSeasons = examplesByResource.podcastSeason.examples
+    .slice(exampleEntries.podcastSeason.length);
+  bar = new ProgressBar(
+    'podcastSeasons: :current/:total :bar',
+    { total: podcastSeasons.length },
+  );
+  for (const example of podcastSeasons) {
+    const json = {
+      fields: {
+        number: withType(example.number),
+        title: withType(example.title),
+        description: withType(example.description),
+        imageUrl: withType(example.imageUrl),
+
+        podcast: withType(
+          makeLink('podcast', example.podcast)
+        ),
+        tags: withType(example.tags.map(tag => makeLink('tag', tag))),
+        contributors: withType(
+          example.contributors.map(
+            contributor => makeLink('contributor', contributor)
+          ),
+        ),
+      }
+    };
+    await environment.createEntry('podcastSeason', json);
+    bar.tick();
+  }
+
+  exampleEntries.podcastSeason = (await environment.getEntries({
+    content_type: 'podcastSeason',
+  })).items;
+
+  const podcastEpisodes = examplesByResource.podcastEpisode.examples
+    .slice(exampleEntries.podcastEpisode.length);
+  bar = new ProgressBar(
+    'podcastEpisodes: :current/:total :bar',
+    { total: podcastEpisodes.length },
+  );
+  for (const example of podcastEpisodes) {
+    const json = {
+      fields: {
+        title: withType(example.title),
+        description: withType(example.description),
+        imageUrl: withType(example.imageUrl),
+        mediaUrl: withType(example.mediaUrl),
+        seasonEpisodeNumber: withType(example.seasonEpisodeNumber),
+
+        podcast: withType(
+          makeLink('podcast', example.podcast)
+        ),
+        season: withType(
+          makeLink('podcastSeason', example.season),
+        ),
+        tags: withType(example.tags.map(tag => makeLink('tag', tag))),
+        contributors: withType(
+          example.contributors.map(
+            contributor => makeLink('contributor', contributor)
+          ),
+        ),
+      }
+    };
+    await environment.createEntry('podcastEpisode', json);
     bar.tick();
   }
 

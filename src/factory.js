@@ -4,7 +4,10 @@ import { factory, ObjectAdapter } from 'factory-girl';
 import resources from './resources';
 
 function resourceCount(resourceName) {
-  if (resourceName === 'meditationCategories') {
+  if (
+    resourceName === 'meditationCategories' ||
+    resourceName === 'podcasts'
+  ) {
     return 5;
   }
   return 25;
