@@ -134,6 +134,8 @@ async function main() {
         description: withType(example.description),
         imageUrl: withType(example.imageUrl),
         mediaUrl: withType(example.mediaUrl),
+        duration: withType(example.duration),
+        publishedAt: withType(example.publishedAt),
 
         category: withType(
           makeLink('meditationCategory', example.category)
@@ -225,7 +227,13 @@ async function main() {
         description: withType(example.description),
         imageUrl: withType(example.imageUrl),
         mediaUrl: withType(example.mediaUrl),
-        seasonEpisodeNumber: withType(example.seasonEpisodeNumber),
+        seasonEpisodeNumber: withType(
+          // episodes were numbered from new to old;
+          // reverse that order now so that they make sense
+          podcastEpisodes.length + 1 - example.seasonEpisodeNumber
+        ),
+        duration: withType(example.duration),
+        publishedAt: withType(example.publishedAt),
 
         podcast: withType(
           makeLink('podcast', example.podcast)
