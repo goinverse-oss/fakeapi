@@ -1,6 +1,6 @@
 import jsonApi from 'jsonapi-server';
 import moment from 'moment';
-import { factory } from 'factory-girl';
+import { factory } from 'factory-bot';
 
 import * as placeholders from './placeholders';
 

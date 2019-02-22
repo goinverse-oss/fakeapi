@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { factory } from 'factory-girl';
+import { factory } from 'factory-bot';
 
 
 export const randomRelatedObjects = (

@@ -1,4 +1,4 @@
-import factory from 'factory-girl';
+import factory from 'factory-bot';
 import jsonApi from 'jsonapi-server';
 import moment from 'moment';
 

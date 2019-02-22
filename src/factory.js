@@ -1,12 +1,16 @@
 import _ from 'lodash';
-import { factory, ObjectAdapter } from 'factory-girl';
+import { factory, ObjectAdapter } from 'factory-bot';
+
+// constant seed for repeatable results
+factory.chance.seed(42);
 
 import resources from './resources';
 
 function resourceCount(resourceName) {
   if (
     resourceName === 'meditationCategories' ||
-    resourceName === 'podcasts'
+    resourceName === 'podcasts' ||
+    resourceName === 'podcastSeasons'
   ) {
     return 5;
   }

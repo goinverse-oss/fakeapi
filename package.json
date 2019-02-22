@@ -15,11 +15,12 @@
     "start": "./build/server.js"
   },
   "dependencies": {
-    "factory-girl": "^5.0.2",
+    "factory-bot": "brettdh/factory-bot",
     "jsonapi-server": "^4.2.0",
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
     "progress": "^2.0.3",
+    "seedrandom": "^2.4.4",
     "source-map-support": "^0.5.9"
   },
   "devDependencies": {

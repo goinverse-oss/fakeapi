@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import jsonApi from 'jsonapi-server';
 import moment from 'moment';
-import { factory } from 'factory-girl';
+import { factory } from 'factory-bot';
 
 import * as placeholders from './placeholders';
 
@@ -46,7 +46,7 @@ factory.define('podcastEpisodes', Object, {
   ),
   publishedAt: factory.sequence(
     'podcastEpisodes.publishedAt',
-    n => moment().subtract(n, 'weeks'),
+    n => placeholders.latestPublishedAt.subtract(n, 'weeks'),
   ),
   status: 'published',
   podcast: randomRelatedObject('podcastEpisodes', 'podcasts', 1, 5),

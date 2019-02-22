@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+// must be _before_ first use of lodash
+import seedrandom from 'seedrandom';
+seedrandom(42, { global: true });
+
 import _ from 'lodash';
 import { createClient } from 'contentful-management';
 import yargs from 'yargs';
@@ -73,29 +77,45 @@ async function main() {
   const examplesList = await examplesPromise;
   const examplesByResource = _.keyBy(examplesList, example => singular(example.resource));
 
-  console.log('Creating resources...');
-  for (const resource of ['tag', 'contributor', 'meditationCategory']) {
+  console.log('Creating/updating resources...');
+
+  const createResources = async (resource, makeJsonFromExample) => {
     // only create enough examples to come up to the desired amount
-    const examples = examplesByResource[resource].examples
-      .slice(exampleEntries[resource].length);
+    const curExampleEntries = exampleEntries[resource];
+    const examples = examplesByResource[resource].examples;
+
     const bar = new ProgressBar(
       `${resource}: :current/:total :bar`,
       { total: examples.length },
     );
+    let i = 0;
     for (const example of examples) {
-      await environment.createEntry(
-        resource,
-        {
-          fields: _(example)
-            .omit(
-              ['id', 'type', 'tags', 'meditations', 'episodes', 'createdAt', 'updatedAt']
-            )
-            .mapValues((value) => ({ 'en-US': value }))
-            .value()
+      const json = makeJsonFromExample(example);
+      if (i < curExampleEntries.length) {
+        const exampleEntry = curExampleEntries[i];
+        if (!_.isEqual(exampleEntry.fields, json.fields)) {
+          Object.assign(exampleEntry.fields, json.fields);
+          await exampleEntry.update();
         }
-      );
+      } else {
+        await environment.createEntry(resource, json);
+      }
+      ++i;
       bar.tick();
     }
+  };
+
+  for (const resource of ['tag', 'contributor', 'meditationCategory']) {
+    await createResources(resource, (example) => (
+      {
+        fields: _(example)
+          .omit(
+            ['id', 'type', 'tags', 'meditations', 'episodes', 'createdAt', 'updatedAt']
+          )
+          .mapValues((value) => ({ 'en-US': value }))
+          .value()
+      }
+    ));
   }
 
   exampleEntries = await getExampleEntries(environment);
@@ -121,14 +141,8 @@ async function main() {
     return { 'en-US': data };
   };
 
-  const meditations = examplesByResource.meditation.examples
-    .slice(exampleEntries.meditation.length);
-  let bar = new ProgressBar(
-    'meditations: :current/:total :bar',
-    { total: meditations.length },
-  );
-  for (const example of meditations) {
-    const json = {
+  await createResources('meditation', (example) => (
+    {
       fields: {
         title: withType(example.title),
         description: withType(example.description),
@@ -147,19 +161,11 @@ async function main() {
           ),
         ),
       }
-    };
-    await environment.createEntry('meditation', json);
-    bar.tick();
-  }
+    }
+  ));
 
-  const podcasts = examplesByResource.podcast.examples
-    .slice(exampleEntries.podcast.length);
-  bar = new ProgressBar(
-    'podcasts: :current/:total :bar',
-    { total: podcasts.length },
-  );
-  for (const example of podcasts) {
-    const json = {
+  await createResources('podcast', (example) => (
+    {
       fields: {
         title: withType(example.title),
         description: withType(example.description),
@@ -172,23 +178,15 @@ async function main() {
           ),
         ),
       }
-    };
-    await environment.createEntry('podcast', json);
-    bar.tick();
-  }
+    }
+  ));
 
   exampleEntries.podcast = (await environment.getEntries({
     content_type: 'podcast',
   })).items;
 
-  const podcastSeasons = examplesByResource.podcastSeason.examples
-    .slice(exampleEntries.podcastSeason.length);
-  bar = new ProgressBar(
-    'podcastSeasons: :current/:total :bar',
-    { total: podcastSeasons.length },
-  );
-  for (const example of podcastSeasons) {
-    const json = {
+  await createResources('podcastSeason', (example) => (
+    {
       fields: {
         number: withType(example.number),
         title: withType(example.title),
@@ -205,23 +203,16 @@ async function main() {
           ),
         ),
       }
-    };
-    await environment.createEntry('podcastSeason', json);
-    bar.tick();
-  }
+    }
+  ));
 
   exampleEntries.podcastSeason = (await environment.getEntries({
     content_type: 'podcastSeason',
   })).items;
 
-  const podcastEpisodes = examplesByResource.podcastEpisode.examples
-    .slice(exampleEntries.podcastEpisode.length);
-  bar = new ProgressBar(
-    'podcastEpisodes: :current/:total :bar',
-    { total: podcastEpisodes.length },
-  );
-  for (const example of podcastEpisodes) {
-    const json = {
+  const numPodcastSeasons = examplesByResource.podcastSeason.examples.length;
+  await createResources('podcastEpisode', (example) => (
+    {
       fields: {
         title: withType(example.title),
         description: withType(example.description),
@@ -230,7 +221,7 @@ async function main() {
         seasonEpisodeNumber: withType(
           // episodes were numbered from new to old;
           // reverse that order now so that they make sense
-          podcastEpisodes.length + 1 - example.seasonEpisodeNumber
+          numPodcastSeasons + 1 - example.seasonEpisodeNumber
         ),
         duration: withType(example.duration),
         publishedAt: withType(example.publishedAt),
@@ -248,10 +239,8 @@ async function main() {
           ),
         ),
       }
-    };
-    await environment.createEntry('podcastEpisode', json);
-    bar.tick();
-  }
+    }
+  ));
 
   exampleEntries = await getExampleEntries(environment);
   console.log('Publishing resources...');
@@ -263,7 +252,7 @@ async function main() {
       { total: entries.length },
     );
     for (const entry of entries) {
-      if (!entry.isPublished()) {
+      if (!entry.isPublished() || entry.isUpdated()) {
         await entry.publish();
       }
       bar.tick();
