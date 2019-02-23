@@ -11,6 +11,7 @@ export default {
   title: jsonApi.Joi.string().required(),
   description: jsonApi.Joi.string(),
   imageUrl: jsonApi.Joi.string().uri(),
+  largeImageUrl: jsonApi.Joi.string().uri(),
   episodes: jsonApi.Joi.many('podcastEpisodes'),
   tags: jsonApi.Joi.many('tags'),
   contributors: jsonApi.Joi.many('contributors'),
@@ -32,6 +33,10 @@ factory.define('podcasts', Object, {
   imageUrl: factory.sequence(
     'podcasts.imageUrl',
     n => placeholders.imageUrl(n),
+  ),
+  largeImageUrl: factory.sequence(
+    'podcasts.largeImageUrl',
+    n => placeholders.largeImageUrl(n),
   ),
   episodes: randomRelatedObjects('podcasts', 'podcastEpisodes'),
   tags: randomRelatedObjects('podcasts', 'tags', 3),

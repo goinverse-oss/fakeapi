@@ -44,7 +44,11 @@ factory.define('meditations', Object, {
   ),
   publishedAt: factory.sequence(
     'meditations.publishedAt',
-    n => placeholders.latestPublishedAt.subtract(n, 'weeks'),
+    n => (
+      moment(placeholders.latestPublishedAt)
+        .subtract(n, 'weeks')
+        .add(1, 'days')
+    ),
   ),
   status: 'published',
   category: randomRelatedObject('meditations', 'meditationCategories', 1, 5),

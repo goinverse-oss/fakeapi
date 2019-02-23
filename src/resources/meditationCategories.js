@@ -11,6 +11,7 @@ export default {
   title: jsonApi.Joi.string().required(),
   description: jsonApi.Joi.string(),
   imageUrl: jsonApi.Joi.string().uri(),
+  largeImageUrl: jsonApi.Joi.string().uri(),
   tags: jsonApi.Joi.many('tags'),
   meditations: jsonApi.Joi.many('meditations'),
   createdAt: jsonApi.Joi.date().required(),
@@ -31,6 +32,10 @@ factory.define('meditationCategories', Object, {
   imageUrl: factory.sequence(
     'meditationCategories.imageUrl',
     n => placeholders.imageUrl(n),
+  ),
+  largeImageUrl: factory.sequence(
+    'podcasts.largeImageUrl',
+    n => placeholders.largeImageUrl(n),
   ),
   tags: randomRelatedObjects('meditationCategories', 'tags', 3),
   meditations: randomRelatedObjects('meditationCategories', 'meditations'),

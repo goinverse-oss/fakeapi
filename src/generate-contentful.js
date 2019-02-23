@@ -11,6 +11,9 @@ import inquirer from 'inquirer';
 import { singular } from 'pluralize';
 import ProgressBar from 'progress';
 
+// import * as jdp from 'jsondiffpatch';
+// const jsondiffpatch = jdp.create();
+
 import { buildExamples } from './factory';
 
 async function getExampleEntries(environment) {
@@ -94,6 +97,13 @@ async function main() {
       if (i < curExampleEntries.length) {
         const exampleEntry = curExampleEntries[i];
         if (!_.isEqual(exampleEntry.fields, json.fields)) {
+          // if (i === 0) {
+          //   console.log(`----\n${resource} diff:`);
+          //   const delta = jsondiffpatch.diff(exampleEntry.fields, json.fields);
+          //   jdp.console.log(delta);
+          //   console.log('----\n');
+          // }
+
           Object.assign(exampleEntry.fields, json.fields);
           await exampleEntry.update();
         }
@@ -109,9 +119,15 @@ async function main() {
     await createResources(resource, (example) => (
       {
         fields: _(example)
-          .omit(
-            ['id', 'type', 'tags', 'meditations', 'episodes', 'createdAt', 'updatedAt']
-          )
+          .omit([
+            'id',
+            'type',
+            'tags',
+            'meditations',
+            'episodes',
+            'createdAt',
+            'updatedAt',
+          ])
           .mapValues((value) => ({ 'en-US': value }))
           .value()
       }
@@ -170,6 +186,7 @@ async function main() {
         title: withType(example.title),
         description: withType(example.description),
         imageUrl: withType(example.imageUrl),
+        largeImageUrl: withType(example.largeImageUrl),
 
         tags: withType(example.tags.map(tag => makeLink('tag', tag))),
         contributors: withType(

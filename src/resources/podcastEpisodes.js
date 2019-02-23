@@ -46,7 +46,7 @@ factory.define('podcastEpisodes', Object, {
   ),
   publishedAt: factory.sequence(
     'podcastEpisodes.publishedAt',
-    n => placeholders.latestPublishedAt.subtract(n, 'weeks'),
+    n => moment(placeholders.latestPublishedAt).subtract(n, 'weeks'),
   ),
   status: 'published',
   podcast: randomRelatedObject('podcastEpisodes', 'podcasts', 1, 5),
